@@ -10,26 +10,35 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/mensaje")
-def mensaje():
-    return  'hola ucentral'
 
 @app.route("/resultados")
 def resultados():
-    return [
+    connection_str = os.getenv('CREDENCIALES_BD')
+    client = MongoClient(connection_str)
+    db = client['proyecto']
+    coleccion = db['sentencias']
+
+    pipeline = [
         {
-            'title': 'titulo 1 desde el backend',
-            'description': 'descripcion 1 desde el backend',
+            '$group': {
+                '_id': '$AnoPublicacion',
+                'count': {'$sum': 1}
+            }
         },
         {
-            'title': 'titulo 2 desde el backend',
-            'description': 'descripcion 2 desde el backend',
-        },
-        {
-            'title': 'titulo 3 desde el backend',
-            'description': 'descripcion 3 desde el backend',
-        },
+            '$sort': {'_id': 1}
+        }
     ]
+
+    resultados = coleccion.aggregate(pipeline)
+    result_array = []
+    for resultado in resultados:
+        result_array.append({
+            'title': 'Año: ' + str(resultado['_id']),
+            'description': 'Total Providencias: ' + str(resultado['count'])
+        })
+
+    return (result_array)
 
 
 @app.route("/search", methods=['POST'])
@@ -75,6 +84,39 @@ def search():
 
     # mapeo los datos a una lista como lo requiere el frontend
     return jsonify(resultado)
+
+@app.route("/count", methods=['POST'])
+def scount():
+    # me conecto a la base de datos
+    connection_str = os.getenv('CREDENCIALES_BD')
+    client = MongoClient(connection_str)
+    db = client["proyecto"]
+    collection = db["sentencias"]
+
+    # recibo los datos enviados vía POST desde el frontend
+    anio = request.json['anio']
+
+    pipeline = [
+        {
+            '$match': {'AnoPublicacion': anio}
+        },
+        {
+            '$group': {
+                '_id': '$Tipo',
+                'count': {'$sum': 1}
+            }
+        }
+    ]
+
+    resultados = collection.aggregate(pipeline)
+    data = []
+    for resultado in resultados:
+        print(resultado)
+        data.append({
+            'tipo_providencia': resultado['_id'],
+            'count': resultado['count']
+        })
+    return data
 
 if __name__ == "__main__":
     app.run()
