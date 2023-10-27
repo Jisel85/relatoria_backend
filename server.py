@@ -46,8 +46,8 @@ def search():
     # me conecto a la base de datos
     connection_str = os.getenv('CREDENCIALES_BD')
     client = MongoClient(connection_str)
-    db = client["proyecto"]
-    collection = db["sentencias"]
+    db = client["Project_NLP"]
+    collection = db["judgments"]
 
     # recibo los datos enviados vía POST desde el frontend
     text = request.json['text']
@@ -60,26 +60,29 @@ def search():
     conditions = []
     if text:
         conditions.append({'$or': [
-            {'Texto': {'$regex': text, '$options': 'i'}},
-            {'Providencia': {'$regex': text, '$options': 'i'}}
+            {'raw_text': {'$regex': text, '$options': 'i'}},
+            {'sintesis': {'$regex': text, '$options': 'i'}},
+            {'id_judgment': {'$regex': text, '$options': 'i'}}
         ]})
     if tipo:
-        conditions.append({'Tipo': {'$regex': tipo, '$options': 'i'}})
+        conditions.append({'tipo': {'$regex': tipo, '$options': 'i'}})
     if anio:
         conditions.append({'AnoPublicacion': {'$regex': anio, '$options': 'i'}})
     if fecha_inicio:
-        conditions.append({'FechaPublicacion': {'$gte': fecha_inicio}})
+        conditions.append({'fecha_sentencia': {'$gte': fecha_inicio}})
     if fecha_fin:
         conditions.append({'FechaPublicacion': {'$lte': fecha_fin}})
 
     # hago la consulta a la base de datos mongo enviando los datos que recibí del frontend
     data = collection.find({'$and': conditions})
+    print(conditions)
 
     resultado = []
     for item in data:
         resultado.append({
-            'title': item['Providencia'],
-            'description': item['Texto'][:400],
+            'title': item['id_judgment'],
+            'summary': item['sintesis'],
+            'description': item['raw_text'][:400],
         })
 
     # mapeo los datos a una lista como lo requiere el frontend
@@ -90,8 +93,8 @@ def scount():
     # me conecto a la base de datos
     connection_str = os.getenv('CREDENCIALES_BD')
     client = MongoClient(connection_str)
-    db = client["proyecto"]
-    collection = db["sentencias"]
+    db = client["Project_NLP"]
+    collection = db["judgments"]
 
     # recibo los datos enviados vía POST desde el frontend
     anio = request.json['anio']
