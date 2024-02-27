@@ -2,3 +2,5 @@ sentence-transformers
 pinecone-client
 flask
 flask-cors
+peft
+bitsandbytes

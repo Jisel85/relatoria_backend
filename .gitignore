@@ -1,1 +1,3 @@
 .venv
+checkpoint-500
+*.pyc

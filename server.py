@@ -4,6 +4,7 @@ from flask_cors import CORS
 
 from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer, util
+from finetunned_model import chatbot
 
 # model
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -18,7 +19,7 @@ CORS(app)
 
 
 @app.route('/search')
-def hello_world():
+def search_route():
     query = request.args['query']
     query_vector = model.encode(query).tolist()
     response = index.query(vector=query_vector, top_k = 3, include_metadata=True)
@@ -26,6 +27,13 @@ def hello_world():
         lambda item: item._data_store,
         response['matches'],
     )))
+
+@app.route('/chatbot')
+def chatbot_route():
+    query = request.args['query']
+    return jsonify(dict(
+        response=chatbot(query)
+    ))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
