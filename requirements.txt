@@ -1,6 +1,11 @@
+torch
+torchvision
+torchaudio
 sentence-transformers
 pinecone-client
 flask
 flask-cors
 peft
 bitsandbytes
+langchain
+faiss-gpu

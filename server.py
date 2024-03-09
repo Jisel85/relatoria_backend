@@ -3,7 +3,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 from models.semantic_search import search
-from models.finetunned_model import chatbot
+#from models.finetunned_model import chatbot
+from models.rag import chatbot
 
 # flash app
 app = Flask(__name__)

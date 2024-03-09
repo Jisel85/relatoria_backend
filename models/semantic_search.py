@@ -8,19 +8,19 @@ index = pc.Index("relatoria-emebeddings")
 def search(json):
     query_vector = model.encode(json['text']).tolist()
     filter = []
-    if json['tipo']:
+    if json.get('tipo'):
         filter.append({
             'Tipo': {'$eq': json['tipo']}
         })
-    if json['anio']:
+    if json.get('anio'):
         filter.append({
             'anio': {'$eq': int(json['anio'])}
         })
-    if json['fecha_inicio']:
+    if json.get('fecha_inicio'):
         filter.append({
             'fecha_number': {'$gte': int(json['fecha_inicio'].replace('-', ''))}
         })
-    if json['fecha_fin']:
+    if json.get('fecha_fin'):
         filter.append({
             'fecha_number': {'$lte': int(json['fecha_fin'].replace('-', ''))}
         })
