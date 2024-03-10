@@ -43,10 +43,13 @@ llm = HuggingFacePipeline(pipeline=pipe, model_kwargs={'temperature': 0})
 embedding = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
 
 def chatbot(prompt):
-    summary = search({
+    summary = ''
+    results = search({
         'text': prompt,
-        'top_k': 1,
-    })['matches'][0]['metadata']['extract_summary']
+        'top_k': 10,
+    })['matches']
+    for result in results:
+        summary += (result['metadata'].get('extract_summary', '') + '\n' + result['metadata'].get('Tema - subtema', '')).strip()
 
     splits = text_splitter.split_text(summary)
     text_chunks = text_splitter.create_documents(splits)
@@ -55,7 +58,7 @@ def chatbot(prompt):
     chain = RetrievalQA.from_chain_type(
         llm=llm, chain_type="stuff", return_source_documents=True, retriever=vectorstore.as_retriever())
     result = chain({
-        "query": 'responde unicamente en el idioma español: ' + prompt
+            "query": f'responde unicamente en el idioma español: Que dice la corte sobre "{prompt}"'
         }, 
         return_only_outputs=True
     )
