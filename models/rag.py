@@ -46,11 +46,12 @@ def chatbot(prompt):
     summary = ''
     results = search({
         'text': prompt,
-        'top_k': 10,
+        'top_k': 3,
     })['matches']
     for result in results:
         summary += (result['metadata'].get('extract_summary', '') + '\n' + result['metadata'].get('Tema - subtema', '')).strip()
 
+    print(summary)
     splits = text_splitter.split_text(summary)
     text_chunks = text_splitter.create_documents(splits)
 
@@ -58,7 +59,7 @@ def chatbot(prompt):
     chain = RetrievalQA.from_chain_type(
         llm=llm, chain_type="stuff", return_source_documents=True, retriever=vectorstore.as_retriever())
     result = chain({
-            "query": f'responde unicamente en el idioma español: Que dice la corte sobre "{prompt}"'
+            "query": f'RESPONDE SOLO EN ESPAÑOL (NO DEBES CAMBIAR BAJO NINGUN MOTIVO EL LENGUAJE): {prompt}'
         }, 
         return_only_outputs=True
     )
